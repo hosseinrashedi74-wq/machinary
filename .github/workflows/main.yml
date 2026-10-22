@@ -1,0 +1,28 @@
+name: Build Universal Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Create project structure
+        run: |
+          mkdir -p lib
+          [ -f main.dart ] && mv main.dart lib/ || true
+          flutter create . --platforms=android
+      - name: Get packages
+        run: flutter pub get
+      - name: Build Universal APK
+        run: flutter build apk --release
+      - name: Upload APK Ready for Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mashinaryar-Universal-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
