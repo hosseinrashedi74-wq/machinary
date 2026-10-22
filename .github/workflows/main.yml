@@ -8,20 +8,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Create project structure
+
+      - name: Setup Flutter App Files
         run: |
           mkdir -p lib
-          [ -f main.dart ] && mv main.dart lib/ || true
-          flutter create . --platforms=android
-      - name: Get packages
-        run: flutter pub get
-      - name: Build Universal APK
+          if [ -f main.dart ]; then
+            cp main.dart lib/main.dart
+          fi
+          flutter create --org com.mashinaryar --project-name mashinaryar .
+          if [ -f main.dart ]; then
+            cp main.dart lib/main.dart
+          fi
+
+      - name: Build APK
         run: flutter build apk --release
-      - name: Upload APK Ready for Download
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Mashinaryar-Universal-APK
