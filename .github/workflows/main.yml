@@ -22,22 +22,24 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Clean App & Inject Code
+      - name: Assemble Flutter Project
         run: |
-          cd ..
-          flutter create --org com.mashinaryar --project-name mashinaryar app_build
-          if [ -f machinary/lib/main.dart ]; then
-            cp machinary/lib/main.dart app_build/lib/main.dart
-          elif [ -f machinary/main.dart ]; then
-            cp machinary/main.dart app_build/lib/main.dart
+          mkdir -p /tmp/build_app
+          cd /tmp/build_app
+          flutter create --org com.mashinaryar --project-name mashinaryar app
+          cd app
+          # انتقال کد اصلی به پروژه جدید
+          if [ -f "$GITHUB_WORKSPACE/main.dart" ]; then
+            cp "$GITHUB_WORKSPACE/main.dart" lib/main.dart
+          elif [ -f "$GITHUB_WORKSPACE/lib/main.dart" ]; then
+            cp "$GITHUB_WORKSPACE/lib/main.dart" lib/main.dart
           fi
-          cd app_build
-          flutter build apk --release
-          mkdir -p ../machinary/build/app/outputs/flutter-apk/
-          cp build/app/outputs/flutter-apk/app-release.apk ../machinary/build/app/outputs/flutter-apk/
+          flutter build apk --release --no-tree-shake-icons
+          mkdir -p "$GITHUB_WORKSPACE/output"
+          cp build/app/outputs/flutter-apk/app-release.apk "$GITHUB_WORKSPACE/output/"
 
-      - name: Upload APK Ready for Download
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Mashinaryar-Universal-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: output/app-release.apk
